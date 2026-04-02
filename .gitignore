@@ -2,3 +2,7 @@
 build/
 
 program
+
+filelist.txt
+
+loc.sh

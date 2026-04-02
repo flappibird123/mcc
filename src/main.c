@@ -1,11 +1,10 @@
-#include "lib/unistd.h"
-#include "lib/stdlib.h"
+#include "lib/stdio.h"
 
 int main(int argc, const char* argv[]) {
 
-    write(1, "Hello\n", 6);
+    putstr(1, "hello\n");
 
-    exit(25);
+
 
     return 0;
 }
