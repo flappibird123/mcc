@@ -2,6 +2,7 @@
 #define MCC_FRONTEND_TOKEN_H
 
 #include "lib/stddef.h"
+#include "lib/stdint.h"
 
 enum tokentype {
     
@@ -20,10 +21,14 @@ enum tokentype {
 
 struct token {
     enum tokentype type;
-    char* lexeme;
+    const char* lexeme;
     size_t length;
     size_t line;
     size_t column;
+
+    union {
+        int64_t int_val;
+    };
 };
 
 #endif // MCC_FRONTEND_TOKEN_H

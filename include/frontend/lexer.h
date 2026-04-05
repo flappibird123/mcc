@@ -9,6 +9,7 @@
 struct lexer {
     const char* source;
     struct vector_token tokens;
+    size_t source_len;
 
     size_t current;
     size_t start;

@@ -1,5 +1,23 @@
 #include "lib/stdlib.h"
 
+#include "lib/ctype.h"
+#include "lib/limits.h"
+#include "lib/stddef.h"
+#include "lib/errno.h"
+/*
+
+#include "lib/stddef.h"
+
+void exit(int status);
+
+void* malloc(size_t size);
+void* realloc(void* ptr, size_t size);
+void free(void* ptr);
+
+long strtol(const char* nptr, char** endptr, int base);
+
+*/
+
 extern void _exit(int status);
 
 void exit(int status) {
@@ -108,4 +126,120 @@ void free(void* ptr) {
             curr = curr->next;
         }
     }
+}
+
+long strtol(const char* nptr, char** endptr, int base) {
+    const char* s = nptr;
+    unsigned long acc = 0;
+    int neg = 0;
+    int any = 0;
+
+    errno = 0;
+
+    while (isspace((unsigned char)*s)) {
+        s++;
+    }
+
+    if (*s == '-') {
+        neg = 1;
+        s++;
+    } else if (*s == '+') {
+        s++;
+    }
+
+    if (base == 0) {
+        if (*s == '0') {
+            if (s[1] == 'x' || s[1] == 'X') {
+                base = 16;
+                s += 2;
+            } else {
+                base = 8;
+                s++;
+            }
+        } else {
+            base = 10;
+        }
+    } else if (base == 16) {
+        if (*s == '0' && (s[1] == 'x' || s[1] == 'X')) {
+            s += 2;
+        }
+    }
+
+    const char* start = s;
+
+    while (*s) {
+        int digit;
+
+        if ('0' <= *s && *s <= '9') {
+            digit = *s - '0';
+        } else if ('a' <= *s && *s <= 'z') {
+            digit = *s - 'a' + 10;
+        } else if ('A' <= *s && *s <= 'Z') {
+            digit = *s - 'A' + 10;
+        } else {
+            break;
+        }
+
+        if (digit >= base) {
+            break;
+        }
+
+        // check for overflow in unsigned arithmetic
+        if (acc > (ULONG_MAX - digit) / (unsigned long)base) {
+            any = 1;
+            errno = ERANGE;
+            // assign safe max values without signed overflow
+            acc = neg ? (unsigned long)LONG_MAX + 1UL : LONG_MAX;
+
+            while (*s) {
+                int skip_digit;
+
+                if ('0' <= *s && *s <= '9') {
+                    skip_digit = *s - '0';
+                } else if ('a' <= *s && *s <= 'z') {
+                    skip_digit = *s - 'a' + 10;
+                } else if ('A' <= *s && *s <= 'Z') {
+                    skip_digit = *s - 'A' + 10;
+                } else {
+                    break;
+                }
+
+                if (skip_digit >= base) {
+                    break;
+                }
+
+                s++;
+            }
+
+            break;
+        }
+
+        acc = acc * (unsigned long)base + (unsigned long)digit;
+        s++;
+        any = 1;
+    }
+
+    if (!any) {
+        if (endptr != NULL) {
+            *endptr = (char*)nptr;
+        }
+        return 0;
+    }
+
+    if (endptr != NULL) {
+        *endptr = (char*)s;
+    }
+
+    if (neg) {
+        if (acc > (unsigned long)LONG_MAX + 1UL) {
+            return LONG_MIN;
+        }
+        return -(long)acc;
+    }
+
+    if (acc > LONG_MAX) {
+        return LONG_MAX;
+    }
+
+    return (long)acc;
 }

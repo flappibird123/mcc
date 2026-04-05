@@ -32,7 +32,7 @@ void vector_token_push_back(struct vector_token* tv, struct token elem) {
 
 struct token vector_token_at(struct vector_token* tv, size_t index) {
     if (index >= tv->size) {
-        putstr(2, "access out of bounds of vector_token");
+        putstr(2, "access out of bounds of vector_token\n");
         exit(1);
     }
     return tv->data[index];
@@ -44,3 +44,12 @@ void vector_token_free(struct vector_token* tv) {
     tv->size = 0;
     tv->capacity = 0;
 }
+
+struct token* avector_token_at(struct vector_token* tv, size_t index) {
+    if (index >= tv->size) {
+        putstr(2, "access out of bounds of vector_token\n");
+        return NULL;
+    }
+    return tv->data + index;
+}
+
